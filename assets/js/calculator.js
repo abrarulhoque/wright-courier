@@ -288,8 +288,8 @@
             
             // In test mode, just check if addresses have minimum length
             if (this.config.testMode) {
-                const hasPickup = elements.pickupInput && elements.pickupInput.value.trim().length >= 10;
-                const hasDropoff = elements.dropoffInput && elements.dropoffInput.value.trim().length >= 10;
+                const hasPickup = elements.pickupInput && elements.pickupInput.value.trim().length >= 3;
+                const hasDropoff = elements.dropoffInput && elements.dropoffInput.value.trim().length >= 3;
                 const canCalculate = hasPickup && hasDropoff && !instance.state.isCalculating;
                 
                 if (elements.calculateBtn) {
