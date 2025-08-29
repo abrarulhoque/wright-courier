@@ -1,0 +1,621 @@
+/* Wright Courier Calculator - Modern Styling */
+
+.wwc-courier-calculator {
+    margin: 30px 0;
+    padding: 0;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen-Sans, Ubuntu, Cantarell, 'Helvetica Neue', sans-serif;
+    line-height: 1.6;
+}
+
+/* Test Mode Notice */
+.wwc-test-mode-notice {
+    background: linear-gradient(135deg, #fff3cd 0%, #ffeaa7 100%);
+    border: 1px solid #ffeaa7;
+    color: #856404;
+    padding: 12px 18px;
+    border-radius: 8px;
+    margin-bottom: 25px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.wwc-test-mode-notice strong {
+    font-weight: 600;
+}
+
+/* Form Section */
+.wwc-form-section {
+    background: #ffffff;
+    border-radius: 12px;
+    padding: 30px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    border: 1px solid #e5e7eb;
+}
+
+.wwc-form-section h3 {
+    margin: 0 0 25px 0;
+    color: #1f2937;
+    font-size: 1.5rem;
+    font-weight: 700;
+    text-align: center;
+    position: relative;
+    padding-bottom: 15px;
+}
+
+.wwc-form-section h3::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 60px;
+    height: 3px;
+    background: linear-gradient(135deg, #007cba 0%, #0056b3 100%);
+    border-radius: 2px;
+}
+
+/* Address Fields */
+.wwc-addresses {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 25px;
+    margin-bottom: 25px;
+    position: relative;
+}
+
+.wwc-addresses::after {
+    content: '→';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 1.5rem;
+    color: #007cba;
+    font-weight: bold;
+    background: white;
+    padding: 8px 12px;
+    border-radius: 50%;
+    border: 2px solid #007cba;
+    z-index: 2;
+}
+
+@media (max-width: 768px) {
+    .wwc-addresses {
+        grid-template-columns: 1fr;
+        gap: 20px;
+    }
+    
+    .wwc-addresses::after {
+        content: '↓';
+        top: 50%;
+    }
+}
+
+/* Field Groups */
+.wwc-field-group {
+    margin-bottom: 25px;
+}
+
+.wwc-field-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 600;
+    color: #374151;
+    font-size: 0.95rem;
+}
+
+.required {
+    color: #ef4444;
+    font-weight: bold;
+}
+
+/* Address Inputs */
+.wwc-address-input {
+    width: 100%;
+    padding: 14px 16px;
+    border: 2px solid #d1d5db;
+    border-radius: 8px;
+    font-size: 16px;
+    transition: all 0.3s ease;
+    background: #ffffff;
+    box-sizing: border-box;
+}
+
+.wwc-address-input:focus {
+    outline: none;
+    border-color: #007cba;
+    box-shadow: 0 0 0 3px rgba(0, 124, 186, 0.1);
+    transform: translateY(-1px);
+}
+
+.wwc-address-input::placeholder {
+    color: #9ca3af;
+}
+
+/* Service Tiers */
+.wwc-tier-options {
+    display: grid;
+    gap: 12px;
+}
+
+.wwc-tier-option {
+    position: relative;
+}
+
+.wwc-tier-option input[type="radio"] {
+    position: absolute;
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.wwc-tier-option label {
+    display: block;
+    padding: 16px 20px;
+    background: #f9fafb;
+    border: 2px solid #e5e7eb;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    position: relative;
+    margin-bottom: 0;
+}
+
+.wwc-tier-option label:hover {
+    background: #f3f4f6;
+    border-color: #007cba;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0, 124, 186, 0.15);
+}
+
+.wwc-tier-option input[type="radio"]:checked + label {
+    background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+    border-color: #007cba;
+    box-shadow: 0 4px 12px rgba(0, 124, 186, 0.2);
+}
+
+.wwc-tier-option input[type="radio"]:checked + label::before {
+    content: '✓';
+    position: absolute;
+    top: 12px;
+    right: 16px;
+    color: #007cba;
+    font-weight: bold;
+    font-size: 18px;
+}
+
+.tier-name {
+    display: block;
+    font-weight: 700;
+    color: #1f2937;
+    font-size: 1.1rem;
+    margin-bottom: 4px;
+}
+
+.tier-details {
+    display: block;
+    color: #6b7280;
+    font-size: 0.9rem;
+}
+
+/* Add-ons */
+.wwc-addon-options {
+    display: grid;
+    gap: 10px;
+}
+
+.wwc-addon-option {
+    position: relative;
+}
+
+.wwc-addon-option input[type="checkbox"] {
+    position: absolute;
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.wwc-addon-option label {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 16px;
+    background: #f9fafb;
+    border: 2px solid #e5e7eb;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    margin-bottom: 0;
+}
+
+.wwc-addon-option label:hover {
+    background: #f3f4f6;
+    border-color: #16a34a;
+    transform: translateX(2px);
+}
+
+.wwc-addon-option input[type="checkbox"]:checked + label {
+    background: linear-gradient(135deg, #dcfce7 0%, #bbf7d0 100%);
+    border-color: #16a34a;
+    box-shadow: 0 2px 8px rgba(22, 163, 74, 0.15);
+}
+
+.wwc-addon-option input[type="checkbox"]:checked + label::after {
+    content: '✓';
+    position: absolute;
+    right: 12px;
+    color: #16a34a;
+    font-weight: bold;
+}
+
+.addon-name {
+    font-weight: 600;
+    color: #374151;
+}
+
+.addon-price {
+    font-weight: 700;
+    color: #16a34a;
+    font-size: 0.9rem;
+}
+
+/* Actions */
+.wwc-actions {
+    text-align: center;
+    margin: 30px 0 20px;
+}
+
+.wwc-calculate-button {
+    background: linear-gradient(135deg, #007cba 0%, #0056b3 100%);
+    color: white;
+    border: none;
+    padding: 16px 40px;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    min-width: 200px;
+    position: relative;
+    overflow: hidden;
+}
+
+.wwc-calculate-button::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+    transition: left 0.5s;
+}
+
+.wwc-calculate-button:hover:not(:disabled) {
+    background: linear-gradient(135deg, #0056b3 0%, #003d82 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0, 124, 186, 0.3);
+}
+
+.wwc-calculate-button:hover:not(:disabled)::before {
+    left: 100%;
+}
+
+.wwc-calculate-button:disabled {
+    background: #9ca3af;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
+
+.wwc-calculate-button:disabled::before {
+    display: none;
+}
+
+.button-loading {
+    display: inline-block;
+}
+
+.button-loading::after {
+    content: '';
+    display: inline-block;
+    width: 12px;
+    height: 12px;
+    margin-left: 8px;
+    border: 2px solid #ffffff;
+    border-radius: 50%;
+    border-top-color: transparent;
+    animation: spin 1s ease-in-out infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+/* Results Section */
+.wwc-results {
+    margin-top: 30px;
+    padding: 25px;
+    background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+    border-radius: 12px;
+    border-left: 5px solid #22c55e;
+    box-shadow: 0 4px 15px rgba(34, 197, 94, 0.1);
+}
+
+.wwc-price-display {
+    text-align: center;
+    margin-bottom: 25px;
+    padding: 20px;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+
+.price-label {
+    display: block;
+    font-size: 1.1rem;
+    color: #6b7280;
+    margin-bottom: 8px;
+    font-weight: 500;
+}
+
+.price-amount {
+    font-size: 2.5rem;
+    font-weight: 800;
+    color: #22c55e;
+    text-shadow: 0 2px 4px rgba(34, 197, 94, 0.2);
+}
+
+/* Breakdown */
+.wwc-price-breakdown {
+    background: white;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    margin-bottom: 20px;
+}
+
+.wwc-price-breakdown h4 {
+    margin: 0 0 15px 0;
+    color: #1f2937;
+    font-size: 1.2rem;
+    font-weight: 700;
+    padding-bottom: 8px;
+    border-bottom: 2px solid #e5e7eb;
+}
+
+.wwc-breakdown-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.wwc-breakdown-list li {
+    padding: 8px 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #f3f4f6;
+}
+
+.wwc-breakdown-list li:last-child {
+    border-bottom: none;
+}
+
+.wwc-breakdown-list li.wwc-total {
+    margin-top: 10px;
+    padding-top: 15px;
+    border-top: 2px solid #e5e7eb;
+    font-size: 1.1rem;
+    color: #22c55e;
+}
+
+.wwc-notice {
+    margin: 15px 0 0 0;
+    padding: 12px;
+    background: #fef3c7;
+    color: #92400e;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    border-left: 4px solid #f59e0b;
+}
+
+/* Cart Actions */
+.wwc-cart-actions {
+    text-align: center;
+    margin-top: 20px;
+}
+
+.wwc-add-to-cart-button {
+    background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+    color: white;
+    border: none;
+    padding: 16px 40px;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    min-width: 200px;
+    text-decoration: none;
+    display: inline-block;
+}
+
+.wwc-add-to-cart-button:hover {
+    background: linear-gradient(135deg, #16a34a 0%, #15803d 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(34, 197, 94, 0.3);
+    color: white;
+}
+
+/* Error Display */
+.wwc-error {
+    margin-top: 25px;
+    padding: 20px;
+    background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%);
+    color: #7f1d1d;
+    border: 1px solid #fecaca;
+    border-radius: 8px;
+    border-left: 5px solid #ef4444;
+    box-shadow: 0 4px 15px rgba(239, 68, 68, 0.1);
+}
+
+.error-message {
+    margin: 0 0 15px 0;
+    font-weight: 500;
+}
+
+.wwc-retry-button {
+    background: #ef4444;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.wwc-retry-button:hover {
+    background: #dc2626;
+    transform: translateY(-1px);
+}
+
+/* Responsive Design */
+@media (max-width: 1024px) {
+    .wwc-form-section {
+        padding: 25px;
+    }
+    
+    .price-amount {
+        font-size: 2.2rem;
+    }
+}
+
+@media (max-width: 768px) {
+    .wwc-form-section {
+        padding: 20px;
+        margin: 15px;
+        border-radius: 8px;
+    }
+    
+    .wwc-addresses {
+        gap: 15px;
+    }
+    
+    .wwc-tier-options {
+        gap: 8px;
+    }
+    
+    .wwc-tier-option label,
+    .wwc-addon-option label {
+        padding: 12px 14px;
+    }
+    
+    .price-amount {
+        font-size: 2rem;
+    }
+    
+    .wwc-calculate-button,
+    .wwc-add-to-cart-button {
+        width: 100%;
+        max-width: none;
+    }
+}
+
+@media (max-width: 480px) {
+    .wwc-form-section h3 {
+        font-size: 1.3rem;
+    }
+    
+    .wwc-breakdown-list li {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 4px;
+    }
+    
+    .tier-name {
+        font-size: 1rem;
+    }
+    
+    .tier-details {
+        font-size: 0.85rem;
+    }
+}
+
+/* Animation Classes */
+.wwc-fade-in {
+    animation: fadeIn 0.5s ease-in-out;
+}
+
+.wwc-slide-up {
+    animation: slideUp 0.4s ease-out;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Loading States */
+.wwc-loading {
+    position: relative;
+    pointer-events: none;
+}
+
+.wwc-loading::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(255, 255, 255, 0.8);
+    border-radius: inherit;
+    z-index: 10;
+}
+
+/* Focus States for Accessibility */
+.wwc-tier-option input[type="radio"]:focus + label,
+.wwc-addon-option input[type="checkbox"]:focus + label {
+    outline: 2px solid #007cba;
+    outline-offset: 2px;
+}
+
+/* High Contrast Mode Support */
+@media (prefers-contrast: high) {
+    .wwc-form-section {
+        border: 2px solid #000;
+    }
+    
+    .wwc-address-input:focus {
+        border-color: #000;
+        box-shadow: 0 0 0 2px #000;
+    }
+}
+
+/* Reduced Motion Support */
+@media (prefers-reduced-motion: reduce) {
+    * {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+}
