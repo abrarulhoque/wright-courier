@@ -330,12 +330,18 @@
             }
             
             // Make API request using fetch for better compatibility
+            const headers = {
+                'Content-Type': 'application/json'
+            };
+            
+            // Only include nonce header in production mode, skip in test mode for public endpoint
+            if (!this.config.testMode && this.config.nonce) {
+                headers['X-WP-Nonce'] = this.config.nonce;
+            }
+            
             fetch(this.config.restUrl + 'quote', {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-WP-Nonce': this.config.nonce
-                },
+                headers: headers,
                 body: JSON.stringify(formData)
             })
             .then(response => response.json())
