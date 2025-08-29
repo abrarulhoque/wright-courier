@@ -227,31 +227,18 @@
             
             console.log('Initializing test mode autocomplete for instance:', instance.id);
             
-            // Simple validation for test mode
+            // In test mode, we don't need place IDs for validation
+            // The calculate button validation and form submission will handle it
+            
+            // Optional: Add visual feedback for test mode
             if (elements.pickupInput) {
-                elements.pickupInput.addEventListener('blur', () => {
-                    const value = elements.pickupInput.value.trim();
-                    if (value.length >= 10) {
-                        instance.state.pickupPlaceId = 'test_pickup_' + this.hashCode(value);
-                        if (elements.pickupPlaceIdInput) {
-                            elements.pickupPlaceIdInput.value = instance.state.pickupPlaceId;
-                        }
-                        this.updateCalculateButton(instance);
-                    }
-                });
+                elements.pickupInput.setAttribute('placeholder', 
+                    elements.pickupInput.getAttribute('placeholder') + ' (Test Mode)');
             }
             
             if (elements.dropoffInput) {
-                elements.dropoffInput.addEventListener('blur', () => {
-                    const value = elements.dropoffInput.value.trim();
-                    if (value.length >= 10) {
-                        instance.state.dropoffPlaceId = 'test_dropoff_' + this.hashCode(value);
-                        if (elements.dropoffPlaceIdInput) {
-                            elements.dropoffPlaceIdInput.value = instance.state.dropoffPlaceId;
-                        }
-                        this.updateCalculateButton(instance);
-                    }
-                });
+                elements.dropoffInput.setAttribute('placeholder', 
+                    elements.dropoffInput.getAttribute('placeholder') + ' (Test Mode)');
             }
         },
         
@@ -298,6 +285,20 @@
         // Update calculate button state for instance
         updateCalculateButton: function(instance) {
             const elements = instance.elements;
+            
+            // In test mode, just check if addresses have minimum length
+            if (this.config.testMode) {
+                const hasPickup = elements.pickupInput && elements.pickupInput.value.trim().length >= 10;
+                const hasDropoff = elements.dropoffInput && elements.dropoffInput.value.trim().length >= 10;
+                const canCalculate = hasPickup && hasDropoff && !instance.state.isCalculating;
+                
+                if (elements.calculateBtn) {
+                    elements.calculateBtn.disabled = !canCalculate;
+                }
+                return;
+            }
+            
+            // In production mode, check for place IDs
             const hasPickup = instance.state.pickupPlaceId || 
                 (elements.pickupInput && elements.pickupInput.value.length >= 10);
             const hasDropoff = instance.state.dropoffPlaceId || 
@@ -306,11 +307,6 @@
             
             if (elements.calculateBtn) {
                 elements.calculateBtn.disabled = !canCalculate;
-                
-                if (canCalculate && this.config.testMode && elements.calculateBtnText) {
-                    elements.calculateBtn.classList.remove('wwc-loading');
-                    elements.calculateBtnText.textContent = this.config.i18n.calculating || 'Calculate Price';
-                }
             }
         },
         
@@ -372,19 +368,23 @@
             let pickupPlaceId = elements.pickupPlaceIdInput ? elements.pickupPlaceIdInput.value : '';
             let dropoffPlaceId = elements.dropoffPlaceIdInput ? elements.dropoffPlaceIdInput.value : '';
             
-            // Generate test place IDs if missing
-            if (!pickupPlaceId && pickup) {
+            // In test mode or when place IDs are missing, generate them
+            if ((!pickupPlaceId && pickup) || this.config.testMode) {
                 pickupPlaceId = 'test_pickup_' + this.hashCode(pickup);
                 if (elements.pickupPlaceIdInput) {
                     elements.pickupPlaceIdInput.value = pickupPlaceId;
                 }
+                // Update instance state
+                instance.state.pickupPlaceId = pickupPlaceId;
             }
             
-            if (!dropoffPlaceId && dropoff) {
+            if ((!dropoffPlaceId && dropoff) || this.config.testMode) {
                 dropoffPlaceId = 'test_dropoff_' + this.hashCode(dropoff);
                 if (elements.dropoffPlaceIdInput) {
                     elements.dropoffPlaceIdInput.value = dropoffPlaceId;
                 }
+                // Update instance state
+                instance.state.dropoffPlaceId = dropoffPlaceId;
             }
             
             // Get selected tier
@@ -419,19 +419,32 @@
         
         // Validate form data before sending
         validateFormData: function(instance, data) {
-            if (!data.pickup.label || !data.pickup.place_id) {
+            if (!data.pickup.label || data.pickup.label.trim().length < 5) {
                 this.showError(instance, this.config.i18n.invalidAddress || 'Please enter a valid pickup address.');
                 return false;
             }
             
-            if (!data.dropoff.label || !data.dropoff.place_id) {
+            if (!data.dropoff.label || data.dropoff.label.trim().length < 5) {
                 this.showError(instance, this.config.i18n.invalidAddress || 'Please enter a valid drop-off address.');
                 return false;
             }
             
-            if (data.pickup.label === data.dropoff.label) {
+            if (data.pickup.label.trim().toLowerCase() === data.dropoff.label.trim().toLowerCase()) {
                 this.showError(instance, 'Pickup and drop-off addresses must be different.');
                 return false;
+            }
+            
+            // In production mode, also check for place IDs
+            if (!this.config.testMode) {
+                if (!data.pickup.place_id) {
+                    this.showError(instance, 'Please select a pickup address from the suggestions.');
+                    return false;
+                }
+                
+                if (!data.dropoff.place_id) {
+                    this.showError(instance, 'Please select a drop-off address from the suggestions.');
+                    return false;
+                }
             }
             
             return true;
