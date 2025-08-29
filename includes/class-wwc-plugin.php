@@ -53,74 +53,9 @@ class WWC_Plugin {
     }
     
     public function enqueue_scripts() {
-        // Only enqueue on target product page
-        if (!$this->is_target_product_page()) {
-            return;
-        }
-        
-        wp_enqueue_script(
-            'wwc-product',
-            WWC_PLUGIN_URL . 'assets/js/product.js',
-            ['jquery'],
-            WWC_PLUGIN_VERSION,
-            true
-        );
-        
-        wp_enqueue_style(
-            'wwc-product',
-            WWC_PLUGIN_URL . 'assets/css/product.css',
-            [],
-            WWC_PLUGIN_VERSION
-        );
-        
-        // Localize script
-        wp_localize_script('wwc-product', 'wwcAjax', [
-            'ajaxurl' => admin_url('admin-ajax.php'),
-            'resturl' => rest_url('wright/v1/'),
-            'nonce' => wp_create_nonce('wwc_nonce'),
-            'testMode' => get_option('wwc_test_mode', 'yes'),
-            'googleApiKey' => get_option('wwc_google_api_key', ''),
-            'i18n' => [
-                'calculating' => __('Calculating...', 'wright-courier'),
-                'error' => __('Error calculating price. Please try again.', 'wright-courier'),
-                'outOfRadius' => __('Service not available for this distance (over 100 miles).', 'wright-courier'),
-                'invalidAddress' => __('Please enter valid pickup and drop-off addresses.', 'wright-courier'),
-                'apiError' => __('Unable to calculate distance. Please try again later.', 'wright-courier')
-            ]
-        ]);
-        
-        // Google Places API (only if not in test mode and API key exists)
-        if (get_option('wwc_test_mode') !== 'yes' && !empty(get_option('wwc_google_api_key'))) {
-            wp_enqueue_script(
-                'google-places',
-                'https://maps.googleapis.com/maps/api/js?key=' . get_option('wwc_google_api_key') . '&libraries=places',
-                [],
-                null,
-                true
-            );
-        }
-    }
-    
-    private function is_target_product_page() {
-        global $post;
-        
-        if (!is_product() || !$post) {
-            return false;
-        }
-        
-        $target_id = get_option('wwc_target_product_id', 177);
-        
-        // Check by product ID
-        if ($post->ID == $target_id) {
-            return true;
-        }
-        
-        // Check by product tag
-        if (has_term('courier-service', 'product_tag', $post)) {
-            return true;
-        }
-        
-        return false;
+        // Scripts are now enqueued conditionally by the Frontend class
+        // when shortcode is detected on the page
+        return;
     }
     
     public function add_admin_menu() {

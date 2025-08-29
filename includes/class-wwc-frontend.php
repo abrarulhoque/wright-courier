@@ -8,62 +8,127 @@ class WWC_Frontend {
     }
     
     private function init_hooks() {
-        // Add fields to product page
-        add_action('woocommerce_single_product_summary', [$this, 'add_courier_fields'], 25);
+        // Register shortcode
+        add_shortcode('wright_courier_calculator', [$this, 'render_shortcode']);
         
-        // Prevent direct add to cart
-        add_filter('woocommerce_product_add_to_cart_url', [$this, 'modify_add_to_cart_url'], 10, 2);
-        add_filter('woocommerce_product_add_to_cart_text', [$this, 'modify_add_to_cart_text'], 10, 2);
+        // Enqueue assets when shortcode is present
+        add_action('wp_enqueue_scripts', [$this, 'maybe_enqueue_assets']);
         
         // Handle AJAX for non-logged users
         add_action('wp_ajax_wwc_calculate_quote', [$this, 'handle_ajax_quote']);
         add_action('wp_ajax_nopriv_wwc_calculate_quote', [$this, 'handle_ajax_quote']);
     }
     
-    public function add_courier_fields() {
-        global $product;
+    /**
+     * Render the courier calculator shortcode
+     */
+    public function render_shortcode($atts) {
+        // Parse shortcode attributes
+        $atts = shortcode_atts([
+            'product_id' => get_option('wwc_target_product_id', 177),
+            'theme' => 'default', // For future theme variations
+            'title' => __('Courier Service Calculator', 'wright-courier'),
+            'container_class' => ''
+        ], $atts, 'wright_courier_calculator');
         
-        if (!$this->is_target_product($product)) {
-            return;
-        }
-        
-        // Load template
-        include WWC_PLUGIN_PATH . 'templates/product-fields.php';
-    }
-    
-    private function is_target_product($product) {
+        // Validate product exists
+        $product = wc_get_product($atts['product_id']);
         if (!$product) {
-            return false;
+            return '<div class="wwc-error-message">' . __('Invalid product ID specified for courier calculator.', 'wright-courier') . '</div>';
         }
         
-        $target_id = get_option('wwc_target_product_id', 177);
+        // Start output buffering
+        ob_start();
         
-        // Check by product ID
-        if ($product->get_id() == $target_id) {
-            return true;
-        }
+        // Set global product for template
+        global $wwc_current_product;
+        $wwc_current_product = $product;
         
-        // Check by product tag
-        $tags = wp_get_post_terms($product->get_id(), 'product_tag', ['fields' => 'slugs']);
-        if (in_array('courier-service', $tags)) {
-            return true;
-        }
+        // Load the calculator template
+        $this->load_calculator_template($atts);
         
-        return false;
+        // Clean up global
+        $wwc_current_product = null;
+        
+        return ob_get_clean();
     }
     
-    public function modify_add_to_cart_url($url, $product) {
-        if ($this->is_target_product($product)) {
-            return '#';
-        }
-        return $url;
+    /**
+     * Load the calculator template with proper isolation
+     */
+    private function load_calculator_template($atts) {
+        global $wwc_current_product;
+        $product = $wwc_current_product;
+        
+        // Load template with attributes
+        include WWC_PLUGIN_PATH . 'templates/shortcode-calculator.php';
     }
     
-    public function modify_add_to_cart_text($text, $product) {
-        if ($this->is_target_product($product)) {
-            return __('Calculate & Add to Cart', 'wright-courier');
+    /**
+     * Conditionally enqueue assets only when shortcode is present
+     */
+    public function maybe_enqueue_assets() {
+        global $post;
+        
+        // Check if shortcode is present in content or widgets
+        if (is_a($post, 'WP_Post') && has_shortcode($post->post_content, 'wright_courier_calculator')) {
+            $this->enqueue_calculator_assets();
         }
-        return $text;
+        
+        // Also check widgets and other dynamic content
+        if (is_active_widget(false, false, 'text') || is_customize_preview()) {
+            $this->enqueue_calculator_assets();
+        }
+    }
+    
+    /**
+     * Enqueue calculator assets with proper namespacing
+     */
+    private function enqueue_calculator_assets() {
+        wp_enqueue_script(
+            'wwc-calculator',
+            WWC_PLUGIN_URL . 'assets/js/calculator.js',
+            ['jquery'],
+            WWC_PLUGIN_VERSION,
+            true
+        );
+        
+        wp_enqueue_style(
+            'wwc-calculator',
+            WWC_PLUGIN_URL . 'assets/css/calculator.css',
+            [],
+            WWC_PLUGIN_VERSION
+        );
+        
+        // Localize script with enhanced data
+        wp_localize_script('wwc-calculator', 'wwcCalculator', [
+            'ajaxurl' => admin_url('admin-ajax.php'),
+            'resturl' => rest_url('wright/v1/'),
+            'nonce' => wp_create_nonce('wwc_nonce'),
+            'testMode' => get_option('wwc_test_mode', 'yes'),
+            'googleApiKey' => get_option('wwc_google_api_key', ''),
+            'pluginUrl' => WWC_PLUGIN_URL,
+            'i18n' => [
+                'calculating' => __('Calculating...', 'wright-courier'),
+                'error' => __('Error calculating price. Please try again.', 'wright-courier'),
+                'outOfRadius' => __('Service not available for this distance (over 100 miles).', 'wright-courier'),
+                'invalidAddress' => __('Please enter valid pickup and drop-off addresses.', 'wright-courier'),
+                'apiError' => __('Unable to calculate distance. Please try again later.', 'wright-courier'),
+                'addingToCart' => __('Adding to Cart...', 'wright-courier'),
+                'addToCart' => __('Add to Cart', 'wright-courier')
+            ]
+        ]);
+        
+        // Google Places API (only if not in test mode and API key exists)
+        if (get_option('wwc_test_mode') !== 'yes' && !empty(get_option('wwc_google_api_key'))) {
+            wp_enqueue_script(
+                'google-places',
+                'https://maps.googleapis.com/maps/api/js?key=' . get_option('wwc_google_api_key') . '&libraries=places&callback=wwcInitGoogleMaps',
+                [],
+                null,
+                true
+            );
+        }
     }
     
     public function handle_ajax_quote() {

@@ -4,16 +4,19 @@ A custom WooCommerce plugin for selling **A→B courier services** with real-tim
 
 ## Features
 
-- **Real-time Distance Calculation**: Uses Google Distance Matrix API for accurate driving distances
-- **Test Mode**: Complete functionality with mock data for testing without API costs
-- **Modern UI**: Responsive design with Google Places Autocomplete
-- **Server-side Validation**: All pricing calculations happen server-side for security
-- **Three Service Tiers**: Standard, Express, and Premium delivery options
-- **Add-on Services**: Signature required, photo confirmation, and expedite options
-- **Fuel Surcharge**: Automatic 5% fuel surcharge calculation
-- **Admin Management**: Complete order details and pricing breakdown in admin
-- **Cache System**: Efficient distance caching to reduce API costs
-- **Email Integration**: Courier details included in order confirmation emails
+- **🎯 Shortcode Integration**: Use `[wright_courier_calculator]` anywhere - pages, posts, widgets
+- **🎨 Theme-Independent**: Completely isolated CSS prevents conflicts with any theme
+- **💻 Real-time Distance Calculation**: Uses Google Distance Matrix API for accurate driving distances
+- **🧪 Test Mode**: Complete functionality with mock data for testing without API costs
+- **📱 Modern Responsive UI**: Beautiful design works on all devices with Google Places Autocomplete
+- **🔒 Server-side Validation**: All pricing calculations happen server-side for security
+- **🚀 Three Service Tiers**: Standard, Express, and Premium delivery options
+- **⭐ Add-on Services**: Signature required, photo confirmation, and expedite options
+- **⛽ Fuel Surcharge**: Automatic 5% fuel surcharge calculation
+- **👨‍💼 Admin Management**: Complete order details and pricing breakdown in admin
+- **⚡ Cache System**: Efficient distance caching to reduce API costs
+- **📧 Email Integration**: Courier details included in order confirmation emails
+- **🔧 No Theme Conflicts**: Fully isolated styling with `!important` declarations
 
 ## Installation
 
@@ -72,15 +75,53 @@ add_filter('wwc_fuel_surcharge', function($default) {
 
 ## Usage
 
+### Using the Shortcode
+
+The plugin now works via shortcode, making it completely flexible and theme-independent:
+
+**Basic Usage:**
+```
+[wright_courier_calculator]
+```
+
+**With Custom Product ID:**
+```
+[wright_courier_calculator product_id="177"]
+```
+
+**With Custom Title:**
+```
+[wright_courier_calculator title="Get Your Delivery Quote" product_id="177"]
+```
+
+**With Custom Container Class:**
+```
+[wright_courier_calculator container_class="my-custom-wrapper"]
+```
+
+**Available Shortcode Parameters:**
+- `product_id` - WooCommerce product ID (default: 177)
+- `title` - Calculator title (default: "Courier Service Calculator")
+- `theme` - Theme variation (default: "default" - for future use)
+- `container_class` - Additional CSS classes for container
+
 ### For Customers
 
-1. Navigate to the courier service product page (Product ID 177)
-2. Enter pickup and drop-off addresses (autocomplete will help)
-3. Select service tier (Standard/Express/Premium)
-4. Choose any add-on services
-5. Click "Calculate Price" to get instant quote
-6. Review price breakdown and click "Add to Cart"
-7. Complete checkout normally
+1. Fill in pickup and drop-off addresses (autocomplete helps in production mode)
+2. Select service tier (Standard/Express/Premium)
+3. Choose any add-on services (Signature, Photo, Expedite)
+4. Click "Calculate Price" to get instant quote with breakdown
+5. Review pricing details and click "Add to Cart"
+6. Complete checkout normally
+
+### Page/Post Integration
+
+You can add the calculator to any page, post, or widget area:
+
+1. **Pages/Posts**: Add the shortcode `[wright_courier_calculator]` in the content editor
+2. **Widgets**: Use a Text widget with the shortcode
+3. **Theme Integration**: Use `do_shortcode('[wright_courier_calculator]')` in PHP
+4. **Custom Fields**: Add shortcode in ACF or custom field content
 
 ### For Store Managers
 
@@ -218,10 +259,11 @@ Returns plugin status and configuration info.
 
 ### Common Issues
 
-**Calculator not appearing on product page:**
-- Check product ID (default: 177) in settings
-- Verify product has `courier-service` tag
-- Check for JavaScript errors in browser console
+**Shortcode not displaying calculator:**
+- Ensure you're using the correct shortcode: `[wright_courier_calculator]`
+- Check that WooCommerce is active and properly configured
+- Verify the product ID exists (default: 177) in WooCommerce
+- Check browser console for JavaScript errors
 
 **"Google API key not configured" error:**
 - Add Google API key in plugin settings
