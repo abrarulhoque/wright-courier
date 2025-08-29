@@ -104,7 +104,7 @@ class WWC_Frontend {
         wp_localize_script('wwc-calculator', 'wwcCalculator', [
             'ajaxurl' => admin_url('admin-ajax.php'),
             'resturl' => rest_url('wright/v1/'),
-            'nonce' => wp_create_nonce('wwc_nonce'),
+            'nonce' => wp_create_nonce('wp_rest'),
             'testMode' => get_option('wwc_test_mode', 'yes'),
             'googleApiKey' => get_option('wwc_google_api_key', ''),
             'pluginUrl' => WWC_PLUGIN_URL,
