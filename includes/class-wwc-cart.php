@@ -262,8 +262,8 @@ class WWC_Cart {
             $result = WC()->cart->add_to_cart($product_id, 1);
             
             if ($result) {
-                // Return cart URL for redirect
-                wp_die(wc_get_cart_url());
+                // Return checkout URL for redirect (better UX for courier services)
+                wp_die(wc_get_checkout_url());
             } else {
                 wp_die('Failed to add to cart');
             }
