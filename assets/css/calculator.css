@@ -74,10 +74,14 @@
     font-size: inherit !important;
     font-family: inherit !important;
     vertical-align: baseline !important;
-    background: transparent !important;
     text-decoration: none !important;
     list-style: none !important;
     outline: none !important;
+}
+
+/* Specific background resets - exclude input fields */
+.wwc-calculator-container *:not(input):not(button):not(.wwc-form-section):not(.wwc-address-input):not(.wwc-calculate-button):not(.wwc-sticky-cta):not(.wwc-retry-button) {
+    background: transparent !important;
 }
 
 /* Error Message Styling */
@@ -269,6 +273,14 @@
     box-shadow: var(--shadow-soft) !important;
     color: var(--slate-900) !important;
     font-family: inherit !important;
+}
+
+/* Ensure address input background is always white */
+.wwc-calculator-container input.wwc-address-input,
+.wwc-calculator-container .wwc-pickup .wwc-address-input,
+.wwc-calculator-container .wwc-dropoff .wwc-address-input {
+    background: #ffffff !important;
+    color: var(--slate-900) !important;
 }
 
 .wwc-calculator-container .wwc-address-input:focus {
