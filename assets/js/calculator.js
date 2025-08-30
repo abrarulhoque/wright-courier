@@ -94,6 +94,14 @@
                 totalAmount: container.querySelector('#wwc-total-amount'),
                 breakdownContent: container.querySelector('#wwc-breakdown-content'),
                 addToCartBtn: container.querySelector('#wwc-add-to-cart'),
+                stickySummary: container.querySelector('#wwc-sticky-summary'),
+                summaryDistance: container.querySelector('#summary-distance'),
+                summaryEta: container.querySelector('#summary-eta'),
+                summaryTotal: container.querySelector('#summary-total'),
+                ctaText: container.querySelector('#cta-text'),
+                ctaPrice: container.querySelector('#cta-price'),
+                swapButton: container.querySelector('.wwc-swap-button'),
+                mapPreview: container.querySelector('#wwc-map-preview'),
                 quoteDataInput: container.querySelector('#wwc-quote-data'),
                 productIdInput: container.querySelector('#wwc-product-id'),
                 nonceInput: container.querySelector('#wwc-nonce'),
@@ -111,6 +119,13 @@
                 elements.form.addEventListener('submit', (e) => {
                     e.preventDefault();
                     this.calculateQuote(instance);
+                });
+            }
+            
+            // Swap addresses button
+            if (elements.swapButton) {
+                elements.swapButton.addEventListener('click', () => {
+                    this.swapAddresses(instance);
                 });
             }
             
@@ -165,6 +180,47 @@
                     this.hideError(instance);
                     this.calculateQuote(instance);
                 });
+            }
+        },
+        
+        // Swap pickup and dropoff addresses
+        swapAddresses: function(instance) {
+            const elements = instance.elements;
+            
+            if (!elements.pickupInput || !elements.dropoffInput) return;
+            
+            // Swap input values
+            const pickupValue = elements.pickupInput.value;
+            const dropoffValue = elements.dropoffInput.value;
+            
+            elements.pickupInput.value = dropoffValue;
+            elements.dropoffInput.value = pickupValue;
+            
+            // Swap place IDs
+            const pickupPlaceId = elements.pickupPlaceIdInput ? elements.pickupPlaceIdInput.value : '';
+            const dropoffPlaceId = elements.dropoffPlaceIdInput ? elements.dropoffPlaceIdInput.value : '';
+            
+            if (elements.pickupPlaceIdInput) elements.pickupPlaceIdInput.value = dropoffPlaceId;
+            if (elements.dropoffPlaceIdInput) elements.dropoffPlaceIdInput.value = pickupPlaceId;
+            
+            // Swap state
+            const tempPlaceId = instance.state.pickupPlaceId;
+            instance.state.pickupPlaceId = instance.state.dropoffPlaceId;
+            instance.state.dropoffPlaceId = tempPlaceId;
+            
+            // Update button state and recalculate if needed
+            this.updateCalculateButton(instance);
+            
+            if (instance.state.currentQuote) {
+                setTimeout(() => this.calculateQuote(instance), 300);
+            }
+            
+            // Visual feedback
+            if (elements.swapButton) {
+                elements.swapButton.style.transform = 'translate(-50%, -50%) rotate(180deg)';
+                setTimeout(() => {
+                    elements.swapButton.style.transform = 'translate(-50%, -50%) rotate(0deg)';
+                }, 300);
             }
         },
         
