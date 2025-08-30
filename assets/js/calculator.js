@@ -247,8 +247,6 @@
             const elements = instance.elements;
             
             const autocompleteOptions = {
-                types: ['address'],
-                componentRestrictions: { country: 'us' },
                 fields: ['place_id', 'formatted_address', 'geometry']
             };
             

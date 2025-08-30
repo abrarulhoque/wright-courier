@@ -283,6 +283,21 @@
     color: var(--slate-900) !important;
 }
 
+/* Text visibility fixes for autocomplete inputs */
+.wwc-calculator-container .wwc-address-input {
+    color: #0f172a !important;
+    -webkit-text-fill-color: #0f172a !important; /* Chrome autofill */
+}
+
+.wwc-calculator-container input.wwc-address-input::placeholder { 
+    opacity: 0.6 !important; 
+}
+
+.wwc-calculator-container input.wwc-address-input:-webkit-autofill {
+    -webkit-text-fill-color: #0f172a !important;
+    box-shadow: 0 0 0px 1000px #fff inset !important; /* keep white bg but readable text */
+}
+
 .wwc-calculator-container .wwc-address-input:focus {
     border-color: var(--brand-navy) !important;
     outline: var(--focus-ring) !important;
