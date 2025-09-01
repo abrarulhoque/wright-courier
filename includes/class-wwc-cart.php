@@ -72,7 +72,11 @@ class WWC_Cart {
                 $sanitized_quote['pickup']['place_id'],
                 $sanitized_quote['dropoff']['place_id'],
                 $sanitized_quote['pickup']['label'],
-                $sanitized_quote['dropoff']['label']
+                $sanitized_quote['dropoff']['label'],
+                $sanitized_quote['pickup']['lat'] ?? null,
+                $sanitized_quote['pickup']['lng'] ?? null,
+                $sanitized_quote['dropoff']['lat'] ?? null,
+                $sanitized_quote['dropoff']['lng'] ?? null
             );
             
             if (!$distance_result['success']) {

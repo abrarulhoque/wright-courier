@@ -18,7 +18,9 @@ class WWC_REST {
                     'type' => 'object',
                     'properties' => [
                         'place_id' => ['type' => 'string'],
-                        'label' => ['type' => 'string']
+                        'label' => ['type' => 'string'],
+                        'lat' => ['type' => 'number'],
+                        'lng' => ['type' => 'number']
                     ]
                 ],
                 'dropoff' => [
@@ -26,7 +28,9 @@ class WWC_REST {
                     'type' => 'object',
                     'properties' => [
                         'place_id' => ['type' => 'string'],
-                        'label' => ['type' => 'string']
+                        'label' => ['type' => 'string'],
+                        'lat' => ['type' => 'number'],
+                        'lng' => ['type' => 'number']
                     ]
                 ],
                 'tier' => [
@@ -77,7 +81,11 @@ class WWC_REST {
                 $data['pickup']['place_id'],
                 $data['dropoff']['place_id'],
                 $data['pickup']['label'],
-                $data['dropoff']['label']
+                $data['dropoff']['label'],
+                $data['pickup']['lat'] ?? null,
+                $data['pickup']['lng'] ?? null,
+                $data['dropoff']['lat'] ?? null,
+                $data['dropoff']['lng'] ?? null
             );
             
             if (!$distance_result['success']) {

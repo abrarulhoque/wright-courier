@@ -115,6 +115,8 @@ $container_class = !empty($atts['container_class']) ? ' ' . esc_attr($atts['cont
                         >
                         <div id="wwc_pickup_hint" class="wwc-address-hint"><?php _e('Start typing an address…', 'wright-courier'); ?></div>
                         <input type="hidden" id="wwc_pickup_place_id" name="pickup_place_id" value="">
+                        <input type="hidden" id="wwc_pickup_lat" name="pickup_lat" value="">
+                        <input type="hidden" id="wwc_pickup_lng" name="pickup_lng" value="">
                     </div>
                     
                     <!-- Swap Button -->
@@ -136,6 +138,8 @@ $container_class = !empty($atts['container_class']) ? ' ' . esc_attr($atts['cont
                         >
                         <div id="wwc_dropoff_hint" class="wwc-address-hint"><?php _e('Start typing an address…', 'wright-courier'); ?></div>
                         <input type="hidden" id="wwc_dropoff_place_id" name="dropoff_place_id" value="">
+                        <input type="hidden" id="wwc_dropoff_lat" name="dropoff_lat" value="">
+                        <input type="hidden" id="wwc_dropoff_lng" name="dropoff_lng" value="">
                     </div>
                 </div>
                 

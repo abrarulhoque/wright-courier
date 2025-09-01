@@ -11,7 +11,7 @@ class WWC_Google {
         $this->test_mode = get_option('wwc_test_mode', 'yes') === 'yes';
     }
     
-    public function get_distance($pickup_place_id, $dropoff_place_id, $pickup_text = '', $dropoff_text = '') {
+    public function get_distance($pickup_place_id, $dropoff_place_id, $pickup_text = '', $dropoff_text = '', $pickup_lat = null, $pickup_lng = null, $dropoff_lat = null, $dropoff_lng = null) {
         // In test mode, return mock data
         if ($this->test_mode) {
             return $this->get_test_distance($pickup_text, $dropoff_text);
@@ -40,12 +40,25 @@ class WWC_Google {
         
         // Make API request
         $distance = $this->make_distance_request($pickup_place_id, $dropoff_place_id);
-        
+
         if ($distance['success']) {
             // Cache for 12 hours
             set_transient($cache_key, $distance['miles'], 12 * HOUR_IN_SECONDS);
+        } else {
+            // Fallback: if API fails but we have coordinates, compute haversine with road factor
+            if (!is_null($pickup_lat) && !is_null($pickup_lng) && !is_null($dropoff_lat) && !is_null($dropoff_lng)) {
+                $miles = $this->haversine_distance($pickup_lat, $pickup_lng, $dropoff_lat, $dropoff_lng);
+                // Apply simple road factor to approximate real driving distance
+                $road_factor = apply_filters('wwc_road_distance_factor', 1.25);
+                $approx_miles = round($miles * $road_factor, 2);
+                return [
+                    'success' => true,
+                    'miles' => $approx_miles,
+                    'fallback' => 'haversine'
+                ];
+            }
         }
-        
+
         return $distance;
     }
     

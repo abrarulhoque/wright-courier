@@ -84,6 +84,10 @@
                 dropoffInput: container.querySelector('#wwc_dropoff'),
                 pickupPlaceIdInput: container.querySelector('#wwc_pickup_place_id'),
                 dropoffPlaceIdInput: container.querySelector('#wwc_dropoff_place_id'),
+                pickupLatInput: container.querySelector('#wwc_pickup_lat'),
+                pickupLngInput: container.querySelector('#wwc_pickup_lng'),
+                dropoffLatInput: container.querySelector('#wwc_dropoff_lat'),
+                dropoffLngInput: container.querySelector('#wwc_dropoff_lng'),
                 calculateBtn: container.querySelector('#wwc-calculate-btn'),
                 calculateBtnText: container.querySelector('#wwc-calculate-btn .button-text'),
                 calculateBtnLoading: container.querySelector('#wwc-calculate-btn .button-loading'),
@@ -318,6 +322,12 @@
                 if (elements.pickupInput) {
                     elements.pickupInput.value = place.formatted_address;
                 }
+                if (place.geometry && place.geometry.location) {
+                    const lat = place.geometry.location.lat();
+                    const lng = place.geometry.location.lng();
+                    if (elements.pickupLatInput) elements.pickupLatInput.value = lat;
+                    if (elements.pickupLngInput) elements.pickupLngInput.value = lng;
+                }
             } else {
                 instance.state.dropoffPlaceId = place.place_id;
                 if (elements.dropoffPlaceIdInput) {
@@ -325,6 +335,12 @@
                 }
                 if (elements.dropoffInput) {
                     elements.dropoffInput.value = place.formatted_address;
+                }
+                if (place.geometry && place.geometry.location) {
+                    const lat = place.geometry.location.lat();
+                    const lng = place.geometry.location.lng();
+                    if (elements.dropoffLatInput) elements.dropoffLatInput.value = lat;
+                    if (elements.dropoffLngInput) elements.dropoffLngInput.value = lng;
                 }
             }
             
@@ -466,11 +482,15 @@
             return {
                 pickup: {
                     place_id: pickupPlaceId,
-                    label: pickup
+                    label: pickup,
+                    lat: elements.pickupLatInput ? parseFloat(elements.pickupLatInput.value || '0') : undefined,
+                    lng: elements.pickupLngInput ? parseFloat(elements.pickupLngInput.value || '0') : undefined
                 },
                 dropoff: {
                     place_id: dropoffPlaceId,
-                    label: dropoff
+                    label: dropoff,
+                    lat: elements.dropoffLatInput ? parseFloat(elements.dropoffLatInput.value || '0') : undefined,
+                    lng: elements.dropoffLngInput ? parseFloat(elements.dropoffLngInput.value || '0') : undefined
                 },
                 tier: selectedTier,
                 addons: selectedAddons
