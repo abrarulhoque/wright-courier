@@ -275,6 +275,19 @@
     font-family: inherit !important;
 }
 
+/* Defensive fix: if a theme/page builder duplicates the address
+   inputs inside the same field group, hide all but the first one. */
+.wwc-calculator-container .wwc-pickup input.wwc-address-input ~ input.wwc-address-input,
+.wwc-calculator-container .wwc-dropoff input.wwc-address-input ~ input.wwc-address-input {
+    display: none !important;
+}
+
+/* Extra guard: ensure only the intended pickup/dropoff inputs are visible */
+.wwc-calculator-container input[name="pickup"]:not(#wwc_pickup),
+.wwc-calculator-container input[name="dropoff"]:not(#wwc_dropoff) {
+    display: none !important;
+}
+
 /* Ensure address input background is always white */
 .wwc-calculator-container input.wwc-address-input,
 .wwc-calculator-container .wwc-pickup .wwc-address-input,

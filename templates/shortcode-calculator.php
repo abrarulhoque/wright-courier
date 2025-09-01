@@ -331,15 +331,26 @@ $container_class = !empty($atts['container_class']) ? ' ' . esc_attr($atts['cont
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     // Show calculator and hide loading placeholder
-    const container = document.querySelector('.wwc-calculator-container');
-    if (container) {
+    // Also guard against duplicate address inputs rendered by some themes/builders
+    document.querySelectorAll('.wwc-calculator-container').forEach(function(container) {
         const placeholder = container.querySelector('.wwc-loading-placeholder');
         const calculator = container.querySelector('.wwc-courier-calculator');
-        
+
         if (placeholder && calculator) {
             placeholder.style.display = 'none';
             calculator.style.display = 'block';
         }
-    }
+
+        // Safety: remove any accidental duplicate pickup/dropoff inputs inside this instance
+        ['.wwc-pickup', '.wwc-dropoff'].forEach(function(groupSelector) {
+            const inputs = container.querySelectorAll(groupSelector + ' input.wwc-address-input');
+            if (inputs.length > 1) {
+                // Keep the first input and remove the rest
+                for (let i = 1; i < inputs.length; i++) {
+                    inputs[i].parentNode && inputs[i].parentNode.removeChild(inputs[i]);
+                }
+            }
+        });
+    });
 });
 </script>
