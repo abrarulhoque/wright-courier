@@ -80,7 +80,7 @@
 }
 
 /* Specific background resets - exclude input fields */
-.wwc-calculator-container *:not(input):not(button):not(.wwc-form-section):not(.wwc-address-input):not(.wwc-calculate-button):not(.wwc-sticky-cta):not(.wwc-retry-button) {
+.wwc-calculator-container *:not(input):not(button):not(.wwc-form-section):not(.wwc-address-input):not(.wwc-calculate-button):not(.wwc-sticky-cta):not(.wwc-retry-button):not(.pill-toggle) {
     background: transparent !important;
 }
 

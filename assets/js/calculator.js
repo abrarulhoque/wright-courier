@@ -251,7 +251,10 @@
             const elements = instance.elements;
             
             const autocompleteOptions = {
-                fields: ['place_id', 'formatted_address', 'geometry']
+                fields: ['place_id', 'formatted_address', 'geometry'],
+                // Restrict results to United States
+                componentRestrictions: { country: ['us'] },
+                types: ['address']
             };
             
             // Initialize pickup autocomplete
@@ -346,9 +349,10 @@
             
             this.updateCalculateButton(instance);
             
-            // Auto-calculate if both addresses are set
-            if (instance.state.pickupPlaceId && instance.state.dropoffPlaceId) {
-                setTimeout(() => this.calculateQuote(instance), 500);
+            // Do not auto-calculate on first address selection.
+            // Only recalculate if a quote already exists and the user changes address.
+            if (instance.state.currentQuote) {
+                setTimeout(() => this.calculateQuote(instance), 300);
             }
         },
         
