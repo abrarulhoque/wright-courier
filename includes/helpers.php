@@ -180,12 +180,24 @@ function wwc_sanitize_quote_data($data) {
     
     $sanitized = [];
     
+    // Helper to sanitize float coordinates
+    $sanitize_float = function($val) {
+        return is_numeric($val) ? floatval($val) : null;
+    };
+
     // Sanitize pickup data
     if (isset($data['pickup']) && is_array($data['pickup'])) {
         $sanitized['pickup'] = [
             'place_id' => wwc_sanitize_place_id($data['pickup']['place_id'] ?? ''),
             'label' => wwc_sanitize_address($data['pickup']['label'] ?? '')
         ];
+        // Optional coordinates for fallback distance calculation
+        if (isset($data['pickup']['lat'])) {
+            $sanitized['pickup']['lat'] = $sanitize_float($data['pickup']['lat']);
+        }
+        if (isset($data['pickup']['lng'])) {
+            $sanitized['pickup']['lng'] = $sanitize_float($data['pickup']['lng']);
+        }
     }
     
     // Sanitize dropoff data
@@ -194,6 +206,13 @@ function wwc_sanitize_quote_data($data) {
             'place_id' => wwc_sanitize_place_id($data['dropoff']['place_id'] ?? ''),
             'label' => wwc_sanitize_address($data['dropoff']['label'] ?? '')
         ];
+        // Optional coordinates for fallback distance calculation
+        if (isset($data['dropoff']['lat'])) {
+            $sanitized['dropoff']['lat'] = $sanitize_float($data['dropoff']['lat']);
+        }
+        if (isset($data['dropoff']['lng'])) {
+            $sanitized['dropoff']['lng'] = $sanitize_float($data['dropoff']['lng']);
+        }
     }
     
     // Sanitize tier
