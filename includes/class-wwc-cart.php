@@ -229,11 +229,10 @@ class WWC_Cart {
             return false;
         }
         
-        // Prevent multiple courier items in cart (v1 limitation)
-        foreach (WC()->cart->get_cart() as $cart_item) {
+        // Replace any existing courier item with the new one
+        foreach (WC()->cart->get_cart() as $key => $cart_item) {
             if (isset($cart_item['wwc_quote_data']) && $cart_item['wwc_quote_data']['is_courier_service']) {
-                wc_add_notice(__('Only one courier service can be booked per order. Please complete your current order first.', 'wright-courier'), 'error');
-                return false;
+                WC()->cart->remove_cart_item($key);
             }
         }
         

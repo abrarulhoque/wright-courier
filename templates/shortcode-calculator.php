@@ -287,6 +287,14 @@ $container_class = !empty($atts['container_class']) ? ' ' . esc_attr($atts['cont
                 <div class="wwc-after-hours-notice" style="display: none;">
                     <small><?php _e('After-hours/weekend surcharge may be billed post-delivery per policy.', 'wright-courier'); ?></small>
                 </div>
+
+                <!-- Proceed to payment action -->
+                <div class="wwc-actions" style="margin-top: 20px;">
+                    <button type="button" id="wwc-proceed" class="wwc-sticky-cta" style="display: none;">
+                        <span class="cta-text"><?php _e('Proceed to Payment', 'wright-courier'); ?></span>
+                        <span class="cta-price" style="display: none;">$0.00</span>
+                    </button>
+                </div>
             </div>
             
             <!-- Error Display -->

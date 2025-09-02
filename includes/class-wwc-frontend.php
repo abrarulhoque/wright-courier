@@ -115,7 +115,8 @@ class WWC_Frontend {
                 'invalidAddress' => __('Please enter valid pickup and drop-off addresses.', 'wright-courier'),
                 'apiError' => __('Unable to calculate distance. Please try again later.', 'wright-courier'),
                 'addingToCart' => __('Adding to Cart...', 'wright-courier'),
-                'addToCart' => __('Add to Cart', 'wright-courier')
+                'addToCart' => __('Add to Cart', 'wright-courier'),
+                'proceedToPayment' => __('Proceed to Payment', 'wright-courier')
             ]
         ]);
         

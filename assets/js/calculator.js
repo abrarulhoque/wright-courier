@@ -98,6 +98,7 @@
                 totalAmount: container.querySelector('#wwc-total-amount'),
                 breakdownContent: container.querySelector('#wwc-breakdown-content'),
                 addToCartBtn: container.querySelector('#wwc-add-to-cart'),
+                proceedBtn: container.querySelector('#wwc-proceed'),
                 stickySummary: container.querySelector('#wwc-sticky-summary'),
                 summaryDistance: container.querySelector('#summary-distance'),
                 summaryEta: container.querySelector('#summary-eta'),
@@ -174,6 +175,12 @@
             // Add to cart
             if (elements.addToCartBtn) {
                 elements.addToCartBtn.addEventListener('click', () => {
+                    this.addToCart(instance);
+                });
+            }
+            // Proceed button in results
+            if (elements.proceedBtn) {
+                elements.proceedBtn.addEventListener('click', () => {
                     this.addToCart(instance);
                 });
             }
@@ -562,6 +569,36 @@
             
             // Show results with animation
             this.showResults(instance);
+
+            // Update sticky summary + proceed button
+            try {
+                if (elements.summaryTotal) {
+                    elements.summaryTotal.textContent = '$' + response.pricing.total.toFixed(2);
+                }
+                if (elements.ctaText) {
+                    elements.ctaText.textContent = this.config.i18n.proceedToPayment || 'Proceed to Payment';
+                }
+                if (elements.ctaPrice) {
+                    elements.ctaPrice.textContent = '$' + response.pricing.total.toFixed(2);
+                    elements.ctaPrice.style.display = 'inline-block';
+                }
+                if (elements.stickySummary) {
+                    elements.stickySummary.classList.add('visible');
+                    elements.stickySummary.style.display = 'block';
+                }
+                if (elements.proceedBtn) {
+                    const priceSpan = elements.proceedBtn.querySelector('.cta-price');
+                    const textSpan = elements.proceedBtn.querySelector('.cta-text');
+                    if (textSpan) textSpan.textContent = this.config.i18n.proceedToPayment || 'Proceed to Payment';
+                    if (priceSpan) {
+                        priceSpan.textContent = '$' + response.pricing.total.toFixed(2);
+                        priceSpan.style.display = 'inline-block';
+                    }
+                    elements.proceedBtn.style.display = 'inline-flex';
+                }
+            } catch (e) {
+                console.warn('Summary update failed', e);
+            }
         },
         
         // Handle quote calculation error
