@@ -657,27 +657,37 @@
                 elements.addToCartBtn.textContent = this.config.i18n.addingToCart || 'Adding to Cart...';
             }
             
-            // Prepare cart data
+            // Prepare payload for WooCommerce wc-ajax endpoint
             const formData = new FormData();
-            formData.append('action', 'woocommerce_add_to_cart');
             formData.append('product_id', productId);
+            formData.append('quantity', '1');
             formData.append('wwc_quote_data', quoteData);
             formData.append('wwc_nonce', nonce);
-            
-            // Add to cart via AJAX
-            fetch(this.config.ajaxUrl, {
-                method: 'POST',
-                body: formData
-            })
-            .then(response => response.text())
-            .then(data => {
-                if (data && data.trim() !== '') {
-                    // Redirect to cart or provided URL
-                    window.location.href = data;
-                } else {
-                    // Reload page to show cart update
-                    window.location.reload();
+
+            const wcAjaxUrl = (window.wc_add_to_cart_params && window.wc_add_to_cart_params.wc_ajax_url)
+                ? window.wc_add_to_cart_params.wc_ajax_url.replace('%%endpoint%%', 'add_to_cart')
+                : (this.config.wcAjaxAddToCart || (this.config.ajaxUrl + '?action=woocommerce_add_to_cart'));
+
+            // Add to cart via WooCommerce AJAX (returns JSON fragments)
+            fetch(wcAjaxUrl, { method: 'POST', body: formData })
+            .then(async (response) => {
+                const text = await response.text();
+                try {
+                    const json = JSON.parse(text);
+                    if (json && json.fragments) {
+                        // Success: redirect straight to checkout
+                        window.location.href = this.config.checkoutUrl || '/checkout/';
+                        return;
+                    }
+                } catch (e) {
+                    // Not JSON; if it's a URL, redirect
+                    if (/^https?:\/\//i.test(text.trim())) {
+                        window.location.href = text.trim();
+                        return;
+                    }
                 }
+                // Fallback: reload to reflect cart and then redirect
+                window.location.href = this.config.checkoutUrl || '/checkout/';
             })
             .catch(error => {
                 console.error('Add to cart failed:', error);

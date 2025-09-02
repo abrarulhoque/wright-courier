@@ -108,6 +108,8 @@ class WWC_Frontend {
             'testMode' => get_option('wwc_test_mode', 'yes'),
             'googleApiKey' => get_option('wwc_google_api_key', ''),
             'pluginUrl' => WWC_PLUGIN_URL,
+            'checkoutUrl' => wc_get_checkout_url(),
+            'wcAjaxAddToCart' => method_exists('WC_AJAX', 'get_endpoint') ? WC_AJAX::get_endpoint('add_to_cart') : add_query_arg('wc-ajax', 'add_to_cart', home_url('/')),
             'i18n' => [
                 'calculating' => __('Calculating...', 'wright-courier'),
                 'error' => __('Error calculating price. Please try again.', 'wright-courier'),
