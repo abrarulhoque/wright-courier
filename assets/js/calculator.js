@@ -203,6 +203,15 @@
                     this.addStop(instance);
                 });
             }
+
+            // Defensive: delegate clicks in case of late DOM changes
+            instance.container.addEventListener('click', (ev) => {
+                const btn = ev.target.closest && ev.target.closest('#wwc-add-stop, .wwc-add-stop-btn');
+                if (btn && instance.container.contains(btn)) {
+                    ev.preventDefault();
+                    this.addStop(instance);
+                }
+            });
         },
         
         // Swap pickup and dropoff addresses
