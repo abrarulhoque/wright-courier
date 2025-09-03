@@ -152,6 +152,15 @@ class WWC_Calculator {
             }
         }
         
+        // Validate optional stops
+        if (!empty($data['stops']) && is_array($data['stops'])) {
+            foreach ($data['stops'] as $stop) {
+                if (empty($stop['label'])) {
+                    return [ 'valid' => false, 'error' => __('Each additional stop must have an address.', 'wright-courier') ];
+                }
+            }
+        }
+        
         return ['valid' => true];
     }
 }

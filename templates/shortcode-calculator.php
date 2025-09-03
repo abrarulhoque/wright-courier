@@ -55,6 +55,15 @@ $container_class = !empty($atts['container_class']) ? ' ' . esc_attr($atts['cont
         0% { transform: rotate(0deg); }
         100% { transform: rotate(360deg); }
     }
+    /* Ensure address input visibility even under aggressive theme overrides */
+    .wwc-calculator-container input.wwc-address-input,
+    .wwc-calculator-container input.wwc-address-input:focus,
+    .wwc-calculator-container input.wwc-address-input:active {
+        background: #fff !important;
+        color: #0f172a !important;
+        -webkit-text-fill-color: #0f172a !important;
+        caret-color: #0f172a !important;
+    }
     </style>
     
     <!-- Loading Placeholder (replaced by JavaScript) -->
@@ -140,6 +149,12 @@ $container_class = !empty($atts['container_class']) ? ' ' . esc_attr($atts['cont
                         <input type="hidden" id="wwc_dropoff_place_id" name="dropoff_place_id" value="">
                         <input type="hidden" id="wwc_dropoff_lat" name="dropoff_lat" value="">
                         <input type="hidden" id="wwc_dropoff_lng" name="dropoff_lng" value="">
+
+                        <!-- Multiple stops -->
+                        <div class="wwc-stops" id="wwc-stops"></div>
+                        <button type="button" class="wwc-add-stop-btn" id="wwc-add-stop" aria-label="<?php esc_attr_e('Add another delivery stop', 'wright-courier'); ?>">
+                            + <?php _e('Add another stop', 'wright-courier'); ?>
+                        </button>
                     </div>
                 </div>
                 
@@ -171,6 +186,27 @@ $container_class = !empty($atts['container_class']) ? ' ' . esc_attr($atts['cont
                                     <span class="tier-name"><?php echo esc_html($tier_data['label']); ?></span>
                                     <span class="tier-time"><?php echo esc_html($tier_time); ?></span>
                                     <span class="tier-pricing"><?php echo $tier_base; ?> base • <?php echo $tier_per_mile; ?>/mi after <?php echo $tier_free_miles; ?></span>
+                                    <?php
+                                    // Brief tier descriptions (always visible)
+                                    $brief = '';
+                                    switch($tier_key) {
+                                        case 'standard':
+                                            $brief = __('General parcels and documents, medication (Up to 24 hrs. or 50 lbs.)', 'wright-courier');
+                                            break;
+                                        case 'express':
+                                            $brief = __('Important documents, urgent packages (Up to 6 hrs. or 100 lbs.)', 'wright-courier');
+                                            break;
+                                        case 'premium':
+                                            $brief = __('Legal documents, medical supplies, high value items (Up to 2 hrs. or 100+ lbs.)', 'wright-courier');
+                                            break;
+                                        default:
+                                            $brief = isset($tier_data['description']) ? esc_html($tier_data['description']) : '';
+                                            break;
+                                    }
+                                    if (!empty($brief)) {
+                                        echo '<span class="tier-brief">' . $brief . '</span>';
+                                    }
+                                    ?>
                                 </label>
                                 <div id="tier-<?php echo esc_attr($tier_key); ?>-desc" class="tier-expanded" style="display: none;">
                                     <p class="tier-explanation">

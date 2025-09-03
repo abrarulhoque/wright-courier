@@ -273,6 +273,7 @@
     box-shadow: var(--shadow-soft) !important;
     color: var(--slate-900) !important;
     font-family: inherit !important;
+    caret-color: var(--slate-900) !important;
 }
 
 /* Defensive fix: if a theme/page builder duplicates the address
@@ -309,6 +310,25 @@
 .wwc-calculator-container input.wwc-address-input:-webkit-autofill {
     -webkit-text-fill-color: #0f172a !important;
     box-shadow: 0 0 0px 1000px #fff inset !important; /* keep white bg but readable text */
+}
+
+/* Ensure dark themes never invert input colors */
+.wwc-calculator-container input.wwc-address-input:focus,
+.wwc-calculator-container input.wwc-address-input:active,
+.wwc-calculator-container input.wwc-address-input:not(:placeholder-shown) {
+    background: #ffffff !important;
+    color: #0f172a !important;
+    -webkit-text-fill-color: #0f172a !important;
+}
+
+@media (prefers-color-scheme: dark) {
+  .wwc-calculator-container input.wwc-address-input,
+  .wwc-calculator-container input.wwc-address-input:focus,
+  .wwc-calculator-container input.wwc-address-input:active {
+      background: #ffffff !important;
+      color: #0f172a !important;
+      -webkit-text-fill-color: #0f172a !important;
+  }
 }
 
 .wwc-calculator-container .wwc-address-input:focus {
@@ -459,6 +479,14 @@
     font-weight: 500 !important;
 }
 
+/* Brief tier description always visible */
+.wwc-calculator-container .tier-brief {
+    display: block !important;
+    color: var(--slate-700) !important;
+    font-size: 12px !important;
+    margin-top: 6px !important;
+}
+
 .wwc-calculator-container .tier-expanded {
     margin-top: 12px !important;
     padding-top: 12px !important;
@@ -499,6 +527,49 @@
 /* Add-ons - Pill Toggles */
 .wwc-calculator-container .wwc-addons {
     margin-bottom: 40px !important;
+}
+
+/* Multiple stops UI */
+.wwc-calculator-container .wwc-stops {
+    margin-top: 12px !important;
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 12px !important;
+}
+
+.wwc-calculator-container .wwc-stop {
+    position: relative !important;
+}
+
+.wwc-calculator-container .wwc-stop .wwc-remove-stop {
+    position: absolute !important;
+    right: 8px !important;
+    top: 8px !important;
+    background: transparent !important;
+    border: none !important;
+    color: var(--slate-700) !important;
+    font-size: 16px !important;
+    cursor: pointer !important;
+}
+
+.wwc-calculator-container .wwc-add-stop-btn {
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+    padding: 10px 14px !important;
+    background: var(--slate-50) !important;
+    border: 2px dashed var(--slate-200) !important;
+    border-radius: var(--radius-pill) !important;
+    color: var(--brand-navy) !important;
+    font-weight: 700 !important;
+    cursor: pointer !important;
+    transition: var(--transition-spring) !important;
+}
+
+.wwc-calculator-container .wwc-add-stop-btn:hover {
+    background: var(--brand-ivory) !important;
+    border-color: var(--accent-gold) !important;
+    transform: translateY(-1px) !important;
 }
 
 .wwc-calculator-container .wwc-addon-pills {

@@ -10,6 +10,110 @@ class WWC_Google {
         $this->api_key = get_option('wwc_google_api_key', '');
         $this->test_mode = get_option('wwc_test_mode', 'yes') === 'yes';
     }
+
+    /**
+     * Calculate total miles for origin -> multiple stops by shortest driving route
+     * $origin: ['place_id','label','lat','lng']
+     * $stops: array of same objects; order will be optimized when using Directions API
+     */
+    public function get_multi_distance($origin, $stops = []) {
+        // Normalize inputs
+        $stops = array_values(array_filter($stops, function($s){ return !empty($s['label']); }));
+        if (empty($origin) || empty($stops)) {
+            return [
+                'success' => false,
+                'error_code' => 'INVALID_INPUT',
+                'message' => __('Origin and at least one stop are required.', 'wright-courier')
+            ];
+        }
+
+        // Test mode: approximate using haversine + simple nearest-neighbor route
+        if ($this->test_mode || empty($this->api_key)) {
+            // Build coordinate list; if lat/lng missing, mock geocode based on label
+            $points = [];
+            $points[] = $this->ensure_coords($origin);
+            foreach ($stops as $s) { $points[] = $this->ensure_coords($s); }
+
+            // Nearest neighbor from origin
+            $n = count($points);
+            $visited = array_fill(0, $n, false);
+            $visited[0] = true; // origin
+            $current = 0;
+            $total = 0.0;
+            for ($step = 1; $step < $n; $step++) {
+                $bestDist = PHP_FLOAT_MAX;
+                $bestIdx = -1;
+                for ($i = 1; $i < $n; $i++) {
+                    if ($visited[$i]) continue;
+                    $d = $this->haversine_distance($points[$current]['lat'], $points[$current]['lng'], $points[$i]['lat'], $points[$i]['lng']);
+                    if ($d < $bestDist) { $bestDist = $d; $bestIdx = $i; }
+                }
+                if ($bestIdx === -1) break;
+                $total += $bestDist;
+                $visited[$bestIdx] = true;
+                $current = $bestIdx;
+            }
+            // Apply road factor to approximate real driving distance
+            $road_factor = apply_filters('wwc_road_distance_factor', 1.25);
+            return [
+                'success' => true,
+                'miles' => round($total * $road_factor, 2),
+                'fallback' => 'haversine_multi'
+            ];
+        }
+
+        // Build cache key from origin + stops place_ids
+        $key_parts = [ $origin['place_id'] ?? $origin['label'] ];
+        foreach ($stops as $s) { $key_parts[] = $s['place_id'] ?? $s['label']; }
+        $cache_key = 'wwc_dir_' . md5(implode('|', $key_parts));
+        $cached = get_transient($cache_key);
+        if ($cached !== false) {
+            return [ 'success' => true, 'miles' => $cached, 'cached' => true ];
+        }
+
+        // Prepare Directions API request with optimize:true waypoints
+        $origin_param = 'place_id:' . sanitize_text_field($origin['place_id'] ?? '');
+        // Use last stop as destination; waypoints contain the rest with optimize:true
+        $dest = array_pop($stops);
+        $destination_param = 'place_id:' . sanitize_text_field($dest['place_id'] ?? '');
+        $waypoints = [];
+        foreach ($stops as $s) {
+            $waypoints[] = 'place_id:' . sanitize_text_field($s['place_id'] ?? '');
+        }
+        $waypoints_param = '';
+        if (!empty($waypoints)) {
+            $waypoints_param = 'optimize:true|' . implode('|', $waypoints);
+        }
+
+        $url = 'https://maps.googleapis.com/maps/api/directions/json';
+        $params = [
+            'origin' => $origin_param,
+            'destination' => $destination_param,
+            'mode' => 'driving',
+            'units' => 'imperial',
+            'key' => $this->api_key
+        ];
+        if ($waypoints_param) { $params['waypoints'] = $waypoints_param; }
+        $url .= '?' . http_build_query($params);
+
+        $response = wp_remote_get($url, [ 'timeout' => 20, 'headers' => [ 'Accept' => 'application/json' ] ]);
+        if (is_wp_error($response)) {
+            return [ 'success' => false, 'error_code' => 'HTTP_ERROR', 'message' => __('Network error occurred.', 'wright-courier') ];
+        }
+        $body = wp_remote_retrieve_body($response);
+        $data = json_decode($body, true);
+        if (empty($data) || ($data['status'] ?? '') !== 'OK' || empty($data['routes'][0]['legs'])) {
+            return [ 'success' => false, 'error_code' => 'API_ERROR', 'message' => __('Unable to calculate multi-stop route.', 'wright-courier') ];
+        }
+        $legs = $data['routes'][0]['legs'];
+        $meters = 0;
+        foreach ($legs as $leg) {
+            $meters += (int)($leg['distance']['value'] ?? 0);
+        }
+        $miles = round($meters / 1609.344, 2);
+        set_transient($cache_key, $miles, 12 * HOUR_IN_SECONDS);
+        return [ 'success' => true, 'miles' => $miles, 'google_data' => [ 'route_legs' => count($legs) ] ];
+    }
     
     public function get_distance($pickup_place_id, $dropoff_place_id, $pickup_text = '', $dropoff_text = '', $pickup_lat = null, $pickup_lng = null, $dropoff_lat = null, $dropoff_lng = null) {
         // In test mode, return mock data
@@ -208,6 +312,17 @@ class WWC_Google {
             ],
             'test_mode' => true
         ];
+    }
+
+    private function ensure_coords($point) {
+        $lat = $point['lat'] ?? null;
+        $lng = $point['lng'] ?? null;
+        if (is_numeric($lat) && is_numeric($lng)) {
+            return [ 'lat' => (float)$lat, 'lng' => (float)$lng ];
+        }
+        $label = $point['label'] ?? ($point['place_id'] ?? '');
+        $geo = $this->get_test_geocode($label);
+        return [ 'lat' => (float)$geo['location']['lat'], 'lng' => (float)$geo['location']['lng'] ];
     }
     
     public function check_service_area($lat, $lng) {

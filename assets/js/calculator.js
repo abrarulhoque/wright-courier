@@ -54,7 +54,9 @@
                     currentQuote: null,
                     isCalculating: false,
                     autocompletePickup: null,
-                    autocompleteDropoff: null
+                    autocompleteDropoff: null,
+                    stopAutocompletes: [],
+                    stops: []
                 }
             };
             
@@ -88,6 +90,8 @@
                 pickupLngInput: container.querySelector('#wwc_pickup_lng'),
                 dropoffLatInput: container.querySelector('#wwc_dropoff_lat'),
                 dropoffLngInput: container.querySelector('#wwc_dropoff_lng'),
+                stopsContainer: container.querySelector('#wwc-stops'),
+                addStopBtn: container.querySelector('#wwc-add-stop'),
                 calculateBtn: container.querySelector('#wwc-calculate-btn'),
                 calculateBtnText: container.querySelector('#wwc-calculate-btn .button-text'),
                 calculateBtnLoading: container.querySelector('#wwc-calculate-btn .button-loading'),
@@ -192,6 +196,13 @@
                     this.calculateQuote(instance);
                 });
             }
+
+            // Add Stop button
+            if (elements.addStopBtn) {
+                elements.addStopBtn.addEventListener('click', () => {
+                    this.addStop(instance);
+                });
+            }
         },
         
         // Swap pickup and dropoff addresses
@@ -287,6 +298,9 @@
                     this.handlePlaceChanged(instance, 'dropoff');
                 });
             }
+
+            // Initialize any existing stop inputs (none by default)
+            this.initStopsAutocomplete(instance);
         },
         
         // Initialize test mode autocomplete
@@ -312,9 +326,15 @@
         
         // Handle place selection from Google autocomplete
         handlePlaceChanged: function(instance, type) {
-            const autocomplete = type === 'pickup' 
-                ? instance.state.autocompletePickup 
-                : instance.state.autocompleteDropoff;
+            let autocomplete = null;
+            if (type === 'pickup') {
+                autocomplete = instance.state.autocompletePickup;
+            } else if (type === 'dropoff') {
+                autocomplete = instance.state.autocompleteDropoff;
+            } else if (String(type).startsWith('stop-')) {
+                const idx = parseInt(String(type).split('-')[1], 10);
+                autocomplete = instance.state.stopAutocompletes[idx];
+            }
                 
             const place = autocomplete.getPlace();
             const elements = instance.elements;
@@ -338,7 +358,7 @@
                     if (elements.pickupLatInput) elements.pickupLatInput.value = lat;
                     if (elements.pickupLngInput) elements.pickupLngInput.value = lng;
                 }
-            } else {
+            } else if (type === 'dropoff') {
                 instance.state.dropoffPlaceId = place.place_id;
                 if (elements.dropoffPlaceIdInput) {
                     elements.dropoffPlaceIdInput.value = place.place_id;
@@ -352,6 +372,20 @@
                     if (elements.dropoffLatInput) elements.dropoffLatInput.value = lat;
                     if (elements.dropoffLngInput) elements.dropoffLngInput.value = lng;
                 }
+            } else if (String(type).startsWith('stop-')) {
+                const idx = parseInt(String(type).split('-')[1], 10);
+                const row = instance.elements.stopsContainer ? instance.elements.stopsContainer.querySelector(`[data-stop-index="${idx}"]`) : null;
+                if (!row) return;
+                const input = row.querySelector('input.wwc-address-input');
+                const pid = row.querySelector('input[data-role="place_id"]');
+                const lat = row.querySelector('input[data-role="lat"]');
+                const lng = row.querySelector('input[data-role="lng"]');
+                if (input) input.value = place.formatted_address || '';
+                if (pid) pid.value = place.place_id || '';
+                if (place.geometry && place.geometry.location) {
+                    if (lat) lat.value = String(place.geometry.location.lat());
+                    if (lng) lng.value = String(place.geometry.location.lng());
+                }
             }
             
             this.updateCalculateButton(instance);
@@ -360,6 +394,71 @@
             // Only recalculate if a quote already exists and the user changes address.
             if (instance.state.currentQuote) {
                 setTimeout(() => this.calculateQuote(instance), 300);
+            }
+        },
+
+        // Initialize autocompletes for stops (if any existing)
+        initStopsAutocomplete: function(instance) {
+            const elements = instance.elements;
+            if (!elements.stopsContainer) return;
+            const rows = elements.stopsContainer.querySelectorAll('.wwc-stop');
+            rows.forEach(row => {
+                const idx = parseInt(row.dataset.stopIndex || '0', 10);
+                const input = row.querySelector('input.wwc-address-input');
+                if (!input) return;
+                if (this.config.testMode || !this.config.apiKey || typeof google === 'undefined' || !google.maps?.places) return;
+                const ac = new google.maps.places.Autocomplete(input, {
+                    fields: ['place_id', 'formatted_address', 'geometry'],
+                    componentRestrictions: { country: ['us'] },
+                    types: ['address']
+                });
+                ac.addListener('place_changed', () => this.handlePlaceChanged(instance, `stop-${idx}`));
+                instance.state.stopAutocompletes[idx] = ac;
+            });
+        },
+
+        // Add a new stop row
+        addStop: function(instance) {
+            const elements = instance.elements;
+            if (!elements.stopsContainer) return;
+            const idx = instance.state.stops.length;
+            instance.state.stops.push({ index: idx });
+
+            const row = document.createElement('div');
+            row.className = 'wwc-stop';
+            row.dataset.stopIndex = String(idx);
+            row.innerHTML = `
+                <input type="text" class="wwc-address-input" placeholder="${this.escapeHtml(this.config.i18n?.anotherAddressPlaceholder || 'Start typing another address…')}" autocomplete="off" aria-label="Additional stop address" />
+                <input type="hidden" data-role="place_id" value="" />
+                <input type="hidden" data-role="lat" value="" />
+                <input type="hidden" data-role="lng" value="" />
+                <button type="button" class="wwc-remove-stop" aria-label="Remove stop">×</button>
+            `;
+            elements.stopsContainer.appendChild(row);
+
+            const input = row.querySelector('input.wwc-address-input');
+            const pid = row.querySelector('input[data-role="place_id"]');
+            input.addEventListener('input', () => {
+                if (pid) pid.value = '';
+                this.updateCalculateButton(instance);
+            });
+            const removeBtn = row.querySelector('.wwc-remove-stop');
+            if (removeBtn) {
+                removeBtn.addEventListener('click', () => {
+                    row.remove();
+                    this.updateCalculateButton(instance);
+                });
+            }
+
+            // Hook up Google autocomplete if available
+            if (!this.config.testMode && this.config.apiKey && typeof google !== 'undefined' && google.maps?.places) {
+                const ac = new google.maps.places.Autocomplete(input, {
+                    fields: ['place_id', 'formatted_address', 'geometry'],
+                    componentRestrictions: { country: ['us'] },
+                    types: ['address']
+                });
+                ac.addListener('place_changed', () => this.handlePlaceChanged(instance, `stop-${idx}`));
+                instance.state.stopAutocompletes[idx] = ac;
             }
         },
         
@@ -489,7 +588,28 @@
                     selectedAddons.push(input.value);
                 }
             });
-            
+            // Collect additional stops
+            const stops = [];
+            if (elements.stopsContainer) {
+                const rows = elements.stopsContainer.querySelectorAll('.wwc-stop');
+                rows.forEach(row => {
+                    const input = row.querySelector('input.wwc-address-input');
+                    const pid = row.querySelector('input[data-role="place_id"]');
+                    const lat = row.querySelector('input[data-role="lat"]');
+                    const lng = row.querySelector('input[data-role="lng"]');
+                    const label = input ? input.value.trim() : '';
+                    const place_id = pid ? pid.value : '';
+                    if (label) {
+                        stops.push({
+                            place_id: place_id,
+                            label: label,
+                            lat: lat ? parseFloat(lat.value || '0') : undefined,
+                            lng: lng ? parseFloat(lng.value || '0') : undefined
+                        });
+                    }
+                });
+            }
+
             return {
                 pickup: {
                     place_id: pickupPlaceId,
@@ -504,7 +624,8 @@
                     lng: elements.dropoffLngInput ? parseFloat(elements.dropoffLngInput.value || '0') : undefined
                 },
                 tier: selectedTier,
-                addons: selectedAddons
+                addons: selectedAddons,
+                stops: stops
             };
         },
         
@@ -536,10 +657,23 @@
                     this.showError(instance, 'Please select a drop-off address from the suggestions.');
                     return false;
                 }
+                if (Array.isArray(data.stops)) {
+                    for (let i = 0; i < data.stops.length; i++) {
+                        if (data.stops[i].label && !data.stops[i].place_id) {
+                            this.showError(instance, 'Please select all additional stops from the suggestions.');
+                            return false;
+                        }
+                    }
+                }
             }
             
             return true;
         },
+
+        // Simple HTML escape for placeholders
+        escapeHtml: function(str) {
+            return String(str || '').replace(/[&<>"']/g, (m) => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','\'':'&#39;'}[m]));
+        }
         
         // Handle successful quote response
         handleQuoteSuccess: function(instance, response) {

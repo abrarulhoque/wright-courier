@@ -33,6 +33,19 @@ class WWC_REST {
                         'lng' => ['type' => 'number']
                     ]
                 ],
+                'stops' => [
+                    'required' => false,
+                    'type' => 'array',
+                    'items' => [
+                        'type' => 'object',
+                        'properties' => [
+                            'place_id' => ['type' => 'string'],
+                            'label' => ['type' => 'string'],
+                            'lat' => ['type' => 'number'],
+                            'lng' => ['type' => 'number']
+                        ]
+                    ]
+                ],
                 'tier' => [
                     'required' => true,
                     'type' => 'string',
@@ -63,6 +76,7 @@ class WWC_REST {
             $data = [
                 'pickup' => $request->get_param('pickup'),
                 'dropoff' => $request->get_param('dropoff'),
+                'stops' => $request->get_param('stops') ?? [],
                 'tier' => $request->get_param('tier'),
                 'addons' => $request->get_param('addons') ?? []
             ];
@@ -75,18 +89,26 @@ class WWC_REST {
                 return new WP_Error('invalid_data', $validation['error'], ['status' => 400]);
             }
             
-            // Get distance
+            // Get distance (single or multi-stop)
             $google = new WWC_Google();
-            $distance_result = $google->get_distance(
-                $data['pickup']['place_id'],
-                $data['dropoff']['place_id'],
-                $data['pickup']['label'],
-                $data['dropoff']['label'],
-                $data['pickup']['lat'] ?? null,
-                $data['pickup']['lng'] ?? null,
-                $data['dropoff']['lat'] ?? null,
-                $data['dropoff']['lng'] ?? null
-            );
+            $distance_result = null;
+            $stops = is_array($data['stops']) ? array_values(array_filter($data['stops'] ?? [], function($s){ return !empty($s['label']); })) : [];
+            if (!empty($stops)) {
+                // Combine the primary dropoff as the first stop
+                array_unshift($stops, $data['dropoff']);
+                $distance_result = $google->get_multi_distance($data['pickup'], $stops);
+            } else {
+                $distance_result = $google->get_distance(
+                    $data['pickup']['place_id'],
+                    $data['dropoff']['place_id'],
+                    $data['pickup']['label'],
+                    $data['dropoff']['label'],
+                    $data['pickup']['lat'] ?? null,
+                    $data['pickup']['lng'] ?? null,
+                    $data['dropoff']['lat'] ?? null,
+                    $data['dropoff']['lng'] ?? null
+                );
+            }
             
             if (!$distance_result['success']) {
                 return new WP_Error(
@@ -126,6 +148,7 @@ class WWC_REST {
                 'quote_data' => [
                     'pickup' => $data['pickup'],
                     'dropoff' => $data['dropoff'],
+                    'stops' => $stops,
                     'tier' => $data['tier'],
                     'addons' => $data['addons'],
                     'timestamp' => time()
