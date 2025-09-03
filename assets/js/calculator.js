@@ -206,7 +206,8 @@
 
             // Defensive: delegate clicks in case of late DOM changes
             instance.container.addEventListener('click', (ev) => {
-                const btn = ev.target.closest && ev.target.closest('#wwc-add-stop, .wwc-add-stop-btn');
+                // Check if the clicked element or its closest parent matches our add stop button
+                const btn = ev.target.closest('#wwc-add-stop') || ev.target.closest('.wwc-add-stop-btn');
                 if (btn && instance.container.contains(btn)) {
                     ev.preventDefault();
                     this.addStop(instance);
@@ -454,8 +455,20 @@
             const removeBtn = row.querySelector('.wwc-remove-stop');
             if (removeBtn) {
                 removeBtn.addEventListener('click', () => {
+                    // Remove autocomplete instance if it exists
+                    if (instance.state.stopAutocompletes[idx]) {
+                        delete instance.state.stopAutocompletes[idx];
+                    }
+                    // Remove from stops array
+                    instance.state.stops = instance.state.stops.filter(s => s.index !== idx);
+                    // Remove DOM element
                     row.remove();
+                    // Update button state
                     this.updateCalculateButton(instance);
+                    // Recalculate if we have a current quote
+                    if (instance.state.currentQuote) {
+                        setTimeout(() => this.calculateQuote(instance), 300);
+                    }
                 });
             }
 

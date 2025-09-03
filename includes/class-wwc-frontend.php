@@ -118,7 +118,8 @@ class WWC_Frontend {
                 'apiError' => __('Unable to calculate distance. Please try again later.', 'wright-courier'),
                 'addingToCart' => __('Adding to Cart...', 'wright-courier'),
                 'addToCart' => __('Add to Cart', 'wright-courier'),
-                'proceedToPayment' => __('Proceed to Payment', 'wright-courier')
+                'proceedToPayment' => __('Proceed to Payment', 'wright-courier'),
+                'anotherAddressPlaceholder' => __('Start typing another address…', 'wright-courier')
             ]
         ]);
         
