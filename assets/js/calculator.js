@@ -5,9 +5,16 @@
 
 // Global callback for Google Maps API - needs to be available immediately
 window.wwcInitGoogleMaps = function() {
-    console.log('Google Maps API loaded, initializing calculators');
+    console.log('Google Maps API loaded, re-initializing autocomplete');
     if (window.WWCCalculator && typeof window.WWCCalculator.init === 'function') {
-        window.WWCCalculator.init();
+        // Don't re-init everything, just refresh autocomplete for existing instances
+        if (window.WWCCalculator.initialized && window.WWCCalculator.instances) {
+            window.WWCCalculator.instances.forEach((instance) => {
+                window.WWCCalculator.initAutocomplete(instance);
+            });
+        } else {
+            window.WWCCalculator.init();
+        }
     }
 };
 
@@ -30,15 +37,22 @@ window.wwcInitGoogleMaps = function() {
         
         // State management per calculator instance
         instances: new Map(),
+        initialized: false,
         
         // Initialize all calculator instances on the page
         init: function() {
+            if (this.initialized) {
+                console.log('Wright Courier Calculator already initialized, skipping');
+                return;
+            }
+            
             const containers = document.querySelectorAll('.wwc-calculator-container');
             
             containers.forEach((container, index) => {
                 this.initInstance(container, index);
             });
             
+            this.initialized = true;
             console.log(`Wright Courier Calculator initialized ${containers.length} instances`, {
                 testMode: this.config.testMode,
                 hasApiKey: !!this.config.apiKey
@@ -205,14 +219,7 @@ window.wwcInitGoogleMaps = function() {
                 });
             }
 
-            // Add Stop button
-            if (elements.addStopBtn) {
-                elements.addStopBtn.addEventListener('click', () => {
-                    this.addStop(instance);
-                });
-            }
-
-            // Defensive: delegate clicks in case of late DOM changes
+            // Add Stop button - use event delegation to handle dynamic buttons
             instance.container.addEventListener('click', (ev) => {
                 // Check if the clicked element or its closest parent matches our add stop button
                 const btn = ev.target.closest('#wwc-add-stop') || ev.target.closest('.wwc-add-stop-btn');
@@ -957,11 +964,13 @@ window.wwcInitGoogleMaps = function() {
         WWCCalculator.init();
     }
     
-    // jQuery compatibility wrapper
+    // jQuery compatibility wrapper - only init if not already done
     if (typeof $ !== 'undefined') {
         $(document).ready(function() {
-            // Re-initialize if jQuery modifies the DOM
-            WWCCalculator.init();
+            // Only initialize if not already done
+            if (!WWCCalculator.initialized) {
+                WWCCalculator.init();
+            }
         });
     }
     
