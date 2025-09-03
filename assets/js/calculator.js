@@ -635,7 +635,14 @@ window.wwcInitGoogleMaps = function() {
                     const lat = row.querySelector('input[data-role="lat"]');
                     const lng = row.querySelector('input[data-role="lng"]');
                     const label = input ? input.value.trim() : '';
-                    const place_id = pid ? pid.value : '';
+                    let place_id = pid ? pid.value : '';
+                    
+                    // In test mode or when place ID is missing, generate one
+                    if ((!place_id && label) || this.config.testMode) {
+                        place_id = 'test_stop_' + this.hashCode(label);
+                        if (pid) pid.value = place_id;
+                    }
+                    
                     if (label) {
                         stops.push({
                             place_id: place_id,

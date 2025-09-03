@@ -27,8 +27,20 @@ class WWC_Google {
             ];
         }
 
+        // Check if any place IDs are fake test IDs
+        $has_test_place_ids = false;
+        if (strpos($origin['place_id'] ?? '', 'test_') === 0) {
+            $has_test_place_ids = true;
+        }
+        foreach ($stops as $s) {
+            if (strpos($s['place_id'] ?? '', 'test_') === 0) {
+                $has_test_place_ids = true;
+                break;
+            }
+        }
+        
         // Test mode: approximate using haversine + simple nearest-neighbor route
-        if ($this->test_mode || empty($this->api_key)) {
+        if ($this->test_mode || empty($this->api_key) || $has_test_place_ids) {
             // Build coordinate list; if lat/lng missing, mock geocode based on label
             $points = [];
             $points[] = $this->ensure_coords($origin);
