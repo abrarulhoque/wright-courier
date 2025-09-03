@@ -3,6 +3,14 @@
  * Isolated and theme-conflict-free implementation
  */
 
+// Global callback for Google Maps API - needs to be available immediately
+window.wwcInitGoogleMaps = function() {
+    console.log('Google Maps API loaded, initializing calculators');
+    if (window.WWCCalculator && typeof window.WWCCalculator.init === 'function') {
+        window.WWCCalculator.init();
+    }
+};
+
 (function($) {
     'use strict';
     
@@ -695,7 +703,7 @@
         // Simple HTML escape for placeholders
         escapeHtml: function(str) {
             return String(str || '').replace(/[&<>"']/g, (m) => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','\'':'&#39;'}[m]));
-        }
+        },
         
         // Handle successful quote response
         handleQuoteSuccess: function(instance, response) {
@@ -936,11 +944,8 @@
         }
     };
     
-    // Global callback for Google Maps API
-    window.wwcInitGoogleMaps = function() {
-        console.log('Google Maps API loaded, initializing calculators');
-        WWCCalculator.init();
-    };
+    // Expose calculator object for debugging and Google Maps callback
+    window.WWCCalculator = WWCCalculator;
     
     // Initialize when DOM is ready
     if (document.readyState === 'loading') {
@@ -951,9 +956,6 @@
         // DOM is already ready
         WWCCalculator.init();
     }
-    
-    // Expose calculator object for debugging
-    window.WWCCalculator = WWCCalculator;
     
     // jQuery compatibility wrapper
     if (typeof $ !== 'undefined') {

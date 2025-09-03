@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Wright Courier Calculator
  * Description: Custom WooCommerce plugin for A→B courier services with real-time, distance-based pricing
- * Version: 1.0.15
+ * Version: 1.0.16
  * Author: Wright Courier
  * Requires at least: 5.0
  * Tested up to: 6.4
@@ -17,7 +17,7 @@ defined('ABSPATH') or die('Direct access not allowed');
 // Plugin constants
 define('WWC_PLUGIN_URL', plugin_dir_url(__FILE__));
 define('WWC_PLUGIN_PATH', plugin_dir_path(__FILE__));
-define('WWC_PLUGIN_VERSION', '1.0.15');
+define('WWC_PLUGIN_VERSION', '1.0.16');
 
 // Check if WooCommerce is active
 if (!in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_option('active_plugins')))) {
