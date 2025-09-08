@@ -67,7 +67,8 @@ class WWC_REST {
     }
     
     public function permissions_check($request) {
-        // For now, allow all requests but could add rate limiting here
+        // Allow all public requests without nonce requirement
+        // This makes the endpoint accessible for non-logged in users
         return true;
     }
     

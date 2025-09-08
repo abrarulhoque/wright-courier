@@ -551,10 +551,7 @@ window.wwcInitGoogleMaps = function() {
                 'Content-Type': 'application/json'
             };
             
-            // Only include nonce header in production mode, skip in test mode for public endpoint
-            if (!this.config.testMode && this.config.nonce) {
-                headers['X-WP-Nonce'] = this.config.nonce;
-            }
+            // This is a public endpoint, no nonce required
             
             fetch(this.config.restUrl + 'quote', {
                 method: 'POST',
