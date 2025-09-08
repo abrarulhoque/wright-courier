@@ -112,10 +112,22 @@ class WWC_REST {
             }
             
             if (!$distance_result['success']) {
+                // Log detailed error for debugging
+                error_log("WWC REST API Distance Error: " . json_encode([
+                    'error_code' => $distance_result['error_code'],
+                    'message' => $distance_result['message'],
+                    'debug' => $distance_result['debug'] ?? null,
+                    'request_data' => [
+                        'pickup' => $data['pickup'],
+                        'dropoff' => $data['dropoff'],
+                        'stops_count' => count($stops)
+                    ]
+                ]));
+                
                 return new WP_Error(
                     $distance_result['error_code'],
-                    $distance_result['message'],
-                    ['status' => 422]
+                    $distance_result['message'] . (isset($distance_result['debug']) ? ' (Debug: ' . json_encode($distance_result['debug']) . ')' : ''),
+                    ['status' => 422, 'debug_data' => $distance_result['debug'] ?? null]
                 );
             }
             

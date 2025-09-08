@@ -110,12 +110,42 @@ class WWC_Google {
 
         $response = wp_remote_get($url, [ 'timeout' => 20, 'headers' => [ 'Accept' => 'application/json' ] ]);
         if (is_wp_error($response)) {
-            return [ 'success' => false, 'error_code' => 'HTTP_ERROR', 'message' => __('Network error occurred.', 'wright-courier') ];
+            $error_msg = $response->get_error_message();
+            error_log("WWC Multi-Distance HTTP Error: " . $error_msg . " | URL: " . $url);
+            return [ 'success' => false, 'error_code' => 'HTTP_ERROR', 'message' => __('Network error occurred.', 'wright-courier'), 'debug' => $error_msg ];
         }
+        
+        $http_code = wp_remote_retrieve_response_code($response);
         $body = wp_remote_retrieve_body($response);
         $data = json_decode($body, true);
-        if (empty($data) || ($data['status'] ?? '') !== 'OK' || empty($data['routes'][0]['legs'])) {
-            return [ 'success' => false, 'error_code' => 'API_ERROR', 'message' => __('Unable to calculate multi-stop route.', 'wright-courier') ];
+        
+        // Log detailed API response for debugging
+        error_log("WWC Multi-Distance API Response: HTTP " . $http_code . " | Status: " . ($data['status'] ?? 'N/A') . " | Body: " . substr($body, 0, 500));
+        
+        if (empty($data)) {
+            return [ 'success' => false, 'error_code' => 'PARSE_ERROR', 'message' => __('Invalid API response format.', 'wright-courier'), 'debug' => 'Empty JSON response' ];
+        }
+        
+        if (($data['status'] ?? '') !== 'OK') {
+            $status = $data['status'] ?? 'UNKNOWN';
+            $error_message = $data['error_message'] ?? 'No error message provided';
+            error_log("WWC Multi-Distance API Error: Status=" . $status . " | Message=" . $error_message);
+            return [ 
+                'success' => false, 
+                'error_code' => 'API_ERROR_' . $status, 
+                'message' => __('Google API error: ', 'wright-courier') . $status . ' - ' . $error_message,
+                'debug' => ['status' => $status, 'error_message' => $error_message, 'full_response' => $data]
+            ];
+        }
+        
+        if (empty($data['routes'][0]['legs'])) {
+            error_log("WWC Multi-Distance Route Error: No route legs found | Routes count: " . count($data['routes'] ?? []) . " | Full response: " . $body);
+            return [ 
+                'success' => false, 
+                'error_code' => 'NO_ROUTES', 
+                'message' => __('No valid routes found for multi-stop calculation.', 'wright-courier'),
+                'debug' => ['routes_count' => count($data['routes'] ?? []), 'full_response' => $data]
+            ];
         }
         $legs = $data['routes'][0]['legs'];
         $meters = 0;
@@ -218,21 +248,32 @@ class WWC_Google {
         ]);
         
         if (is_wp_error($response)) {
+            $error_msg = $response->get_error_message();
+            error_log("WWC Distance HTTP Error: " . $error_msg . " | URL: " . $url);
             return [
                 'success' => false,
                 'error_code' => 'HTTP_ERROR',
-                'message' => __('Network error occurred.', 'wright-courier')
+                'message' => __('Network error occurred.', 'wright-courier'),
+                'debug' => $error_msg
             ];
         }
         
+        $http_code = wp_remote_retrieve_response_code($response);
         $body = wp_remote_retrieve_body($response);
         $data = json_decode($body, true);
         
+        // Log detailed API response for debugging
+        error_log("WWC Distance API Response: HTTP " . $http_code . " | Status: " . ($data['status'] ?? 'N/A') . " | Body: " . substr($body, 0, 500));
+        
         if (empty($data) || $data['status'] !== 'OK') {
+            $status = $data['status'] ?? 'UNKNOWN';
+            $error_message = $data['error_message'] ?? 'No error message provided';
+            error_log("WWC Distance API Error: Status=" . $status . " | Message=" . $error_message);
             return [
                 'success' => false,
-                'error_code' => 'API_ERROR',
-                'message' => __('Google API error: ', 'wright-courier') . ($data['status'] ?? 'Unknown error')
+                'error_code' => 'API_ERROR_' . $status,
+                'message' => __('Google API error: ', 'wright-courier') . $status . ' - ' . $error_message,
+                'debug' => ['status' => $status, 'error_message' => $error_message, 'full_response' => $data]
             ];
         }
         
